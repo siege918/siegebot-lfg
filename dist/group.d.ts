@@ -1,14 +1,24 @@
-import { Snowflake, Collection, GuildMember } from "discord.js";
+import { Snowflake, TextChannel, GuildMember } from "discord.js";
 import { Moment } from "moment";
+declare class Player {
+    Id: Snowflake;
+    Tag: string;
+    Mention: string;
+    constructor(guildMember: GuildMember);
+}
 export declare class Group {
     gameName: string;
-    players: Set<Snowflake>;
+    players: Map<Snowflake, Player>;
     maxPlayers: number;
     startTime: Moment;
-    creator: Snowflake;
-    constructor(creator: string, gameName: string, maxPlayers: number, startTime: Moment);
+    creator: Player;
+    channel: TextChannel;
+    hasHad15MinuteUpdate: boolean;
+    hasHadStartingUpdate: boolean;
+    constructor(creator: GuildMember, gameName: string, maxPlayers: number, startTime: Moment, channel: TextChannel);
     isFull(): boolean;
-    addPlayer(player: Snowflake): void;
+    addPlayer(player: GuildMember): void;
     removePlayer(player: Snowflake): void;
-    print(users: Collection<Snowflake, GuildMember>): string;
+    print(doMention?: boolean): string;
 }
+export {};

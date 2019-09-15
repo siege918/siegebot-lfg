@@ -1,13 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const constants_1 = require("./constants");
+class Player {
+    constructor(guildMember) {
+        this.Id = guildMember.id;
+        this.Tag = guildMember.user.tag;
+        this.Mention = guildMember.toString();
+    }
+}
 class Group {
-    constructor(creator, gameName, maxPlayers, startTime) {
+    constructor(creator, gameName, maxPlayers, startTime, channel) {
         this.gameName = gameName;
         this.maxPlayers = maxPlayers;
         this.startTime = startTime;
-        this.creator = creator;
-        this.players = new Set([creator]);
+        this.creator = new Player(creator);
+        this.channel = channel;
+        this.players = new Map();
+        this.players.set(this.creator.Id, this.creator);
     }
     isFull() {
         return this.maxPlayers > 0 && this.players.size >= this.maxPlayers;
@@ -16,10 +25,10 @@ class Group {
         if (this.isFull()) {
             throw new Error("You can't join a full group.");
         }
-        if (this.players.has(player)) {
+        if (this.players.has(player.id)) {
             throw new Error("You can't join a group that you're already in.");
         }
-        this.players.add(player);
+        this.players.set(player.id, new Player(player));
     }
     removePlayer(player) {
         if (!this.players.has(player)) {
@@ -27,14 +36,10 @@ class Group {
         }
         this.players.delete(player);
     }
-    print(users) {
-        const getTag = (snowflake) => {
-            const creatorMember = users.get(snowflake);
-            return creatorMember ? creatorMember.user.tag : "Not found";
-        };
+    print(doMention = false) {
         return (`    *Game*: ${this.gameName}
-    *Created by*: ${getTag(this.creator)}
-    *Players*: ${[...this.players].map(player => getTag(player)).join(', ')}
+    *Created by*: ${this.creator.Tag}
+    *Players*: ${[...this.players.values()].map(player => doMention ? player.Mention : player.Tag).join(', ')}
     *Start Time*: ${this.startTime.format(constants_1.DATE_FORMAT)} (${this.startTime.fromNow()})
     *Max Players*: ${this.maxPlayers || 'No Limit'}`);
     }

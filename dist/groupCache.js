@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const group_1 = require("./group");
+const moment = require("moment");
 class GroupCache {
     constructor() {
         this._cache = [];
@@ -12,22 +13,35 @@ class GroupCache {
         }
         return group;
     }
-    print(users, index) {
+    print(index, doMention = false) {
         return (`**Group Number ${index}**
-${this._cache[index].print(users)}
+${this._cache[index].print(doMention)}
 *Join this group by typing '.join ${index}'
 Leave this group by typing '.leave ${index}'*
 `);
     }
-    printAll(users) {
-        return this._cache.map((group, index) => this.print(users, index)).join('\n---------------------------------\n\n');
+    printAll() {
+        return this._cache.map((group, index) => this.print(index)).join('\n---------------------------------\n\n');
     }
-    create(creator, gameName, maxPlayers, startTime) {
-        return (this._cache.push(new group_1.Group(creator, gameName, maxPlayers, startTime)) - 1);
+    get15MinuteGroups() {
+        let groups = this._cache.filter((group) => !group.hasHad15MinuteUpdate && moment().add(15, 'minutes').isAfter(group.startTime));
+        groups.forEach((group) => { group.hasHad15MinuteUpdate = true; });
+        return groups;
+    }
+    getStartingGroups() {
+        let groups = this._cache.filter((group) => !group.hasHadStartingUpdate && moment().isAfter(group.startTime));
+        groups.forEach((group) => { group.hasHadStartingUpdate = true; });
+        return groups;
+    }
+    housekeep() {
+        this._cache = this._cache.filter((group) => !group.hasHadStartingUpdate);
+    }
+    create(creator, gameName, maxPlayers, startTime, channel) {
+        return (this._cache.push(new group_1.Group(creator, gameName, maxPlayers, startTime, channel)) - 1);
     }
     remove(creator, index) {
         let group = this.get(index);
-        if (group.creator !== creator) {
+        if (group.creator.Id !== creator) {
             throw new Error('Groups can only be removed by their creator.');
         }
         return this._cache.splice(index, 1)[0];

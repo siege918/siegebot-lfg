@@ -1,37 +1,54 @@
-import { Snowflake, Collection, GuildMember } from "discord.js";
+import { Snowflake, TextChannel, GuildMember } from "discord.js";
 import { Moment } from "moment";
 import { DATE_FORMAT } from './constants';
 
+class Player {
+    Id: Snowflake;
+    Tag: string;
+    Mention: string;
+
+    constructor(guildMember: GuildMember) {
+        this.Id = guildMember.id;
+        this.Tag = guildMember.user.tag;
+        this.Mention = guildMember.toString();
+    }
+}
+
 export class Group {
     public gameName: string;
-    public players: Set<Snowflake>;
+    public players: Map<Snowflake, Player>;
     public maxPlayers: number;
     public startTime: Moment;
-    public creator: Snowflake;
+    public creator: Player;
+    public channel: TextChannel;
+    public hasHad15MinuteUpdate: boolean;
+    public hasHadStartingUpdate: boolean;
 
-    constructor(creator: string, gameName: string, maxPlayers: number, startTime: Moment) {
+    constructor(creator: GuildMember, gameName: string, maxPlayers: number, startTime: Moment, channel: TextChannel) {
         this.gameName = gameName;
         this.maxPlayers = maxPlayers;
         this.startTime = startTime;
-        this.creator = creator;
+        this.creator = new Player(creator);
+        this.channel = channel;
 
-        this.players = new Set([creator]);
+        this.players = new Map<Snowflake, Player>();
+        this.players.set(this.creator.Id, this.creator);
     }
 
     isFull(): boolean {
         return this.maxPlayers > 0 && this.players.size >= this.maxPlayers;
     }
 
-    addPlayer(player: Snowflake) {
+    addPlayer(player: GuildMember) {
         if (this.isFull()) {
             throw new Error("You can't join a full group.");
         }
 
-        if (this.players.has(player)) {
+        if (this.players.has(player.id)) {
             throw new Error("You can't join a group that you're already in.");
         }
 
-        this.players.add(player);
+        this.players.set(player.id, new Player(player));
     }
 
     removePlayer(player: Snowflake) {
@@ -42,16 +59,11 @@ export class Group {
         this.players.delete(player);
     }
 
-    print(users: Collection<Snowflake, GuildMember>): string {
-        const getTag = (snowflake: Snowflake) => {
-            const creatorMember = users.get(snowflake);
-            return creatorMember ? creatorMember.user.tag : "Not found";
-        }
-
+    print(doMention: boolean = false): string {
         return (
 `    *Game*: ${this.gameName}
-    *Created by*: ${getTag(this.creator)}
-    *Players*: ${[...this.players].map(player => getTag(player)).join(', ')}
+    *Created by*: ${this.creator.Tag}
+    *Players*: ${[...this.players.values()].map(player => doMention ? player.Mention : player.Tag).join(', ')}
     *Start Time*: ${this.startTime.format(DATE_FORMAT)} (${this.startTime.fromNow()})
     *Max Players*: ${this.maxPlayers || 'No Limit'}`
         );

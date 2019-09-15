@@ -19,11 +19,15 @@
   },
   "homepage": "https://github.com/siege918/siegebot-lfg#readme",
   "dependencies": {
+    "@types/aws-sdk": "^2.7.0",
     "@types/hashids": "^1.0.30",
     "@types/node": "^12.7.5",
+    "@types/node-cron": "^2.0.2",
+    "aws-sdk": "^2.528.0",
     "discord.js": "^11.4.2",
     "hashids": "^2.0.1",
-    "moment": "^2.24.0"
+    "moment": "^2.24.0",
+    "node-cron": "^2.0.3"
   },
   "devDependencies": {
     "ts-node": "^8.3.0",

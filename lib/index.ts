@@ -1,10 +1,14 @@
-import { Message } from 'discord.js';
+import { Message, TextChannel } from 'discord.js';
 import { Config } from './config';
 import { GroupCache } from './groupCache';
+import { Group } from './group';
 import * as moment from 'moment';
 import { DATE_FORMAT } from './constants';
+import * as cron from 'node-cron';
+import {backup, restore} from './backup';
 
 let groupCache: GroupCache = new GroupCache();
+restore(groupCache);
 
 moment.relativeTimeThreshold('M', 12);
 moment.relativeTimeThreshold('d', 30);
@@ -12,6 +16,28 @@ moment.relativeTimeThreshold('h', 24);
 moment.relativeTimeThreshold('m', 120);
 moment.relativeTimeThreshold('s', 360);
 moment.relativeTimeThreshold('ss', 3);
+
+//Automatically backup
+cron.schedule('*/15 * * * *', () => {
+  backup(groupCache);
+});
+
+//Alert people when a game is 15 minutes away, or starting now
+cron.schedule('* * * * *', () => {
+  groupCache.housekeep();
+
+  let fifteenMinuteGroups = groupCache.get15MinuteGroups();
+
+  for (var i = 0; i < fifteenMinuteGroups.length; i++) {
+    fifteenMinuteGroups[i].channel.send(`A game is starting in 15 minutes!\n\n${fifteenMinuteGroups[i].print(true)}`);
+  }
+  
+  let startingGroups = groupCache.getStartingGroups();
+
+  for (var i = 0; i < startingGroups.length; i++) {
+    startingGroups[i].channel.send(`A game is starting now!\n\n${startingGroups[i].print(true)}`);
+  }
+});
 
 /**
  * Creates a group in the group cache.
@@ -55,13 +81,14 @@ const createPromise = (
     }
 
     let groupId = groupCache.create(
-      message.author.id,
+      message.member,
       gameName,
       maxPlayers,
-      startTime
+      startTime,
+      message.channel as TextChannel
     );
 
-    message.channel.send(`Group created!\n\n${groupCache.print(message.guild.members, groupId)}`);
+    message.channel.send(`Group created!\n\n${groupCache.print(groupId)}`);
   } catch (e) {
     message.channel.send(`Error: ${e.message}`);
   }
@@ -95,7 +122,7 @@ const removePromise = (
     }
 
     message.channel.send(
-      `**Successfully removed the following group:**\n\n${group.print(message.guild.members)}`
+      `**Successfully removed the following group:**\n\n${group.print()}`
     );
   } catch (e) {
     message.channel.send(`Error: ${e.message}`);
@@ -123,9 +150,9 @@ const joinPromise = (
       }
     }
 
-    var group = groupCache.joinGroup(message.author.id, groupId);
+    var group = groupCache.joinGroup(message.member, groupId);
     message.channel.send(
-      `**Successfully joined the following group:**\n\n${groupCache.print(message.guild.members, groupId)}`
+      `**Successfully joined the following group:**\n\n${groupCache.print(groupId)}`
     );
   } catch (e) {
     message.channel.send(`Error: ${e.message}`);
@@ -155,7 +182,7 @@ const leavePromise = (
 
     var group = groupCache.leaveGroup(message.author.id, groupId);
     message.channel.send(
-      `**Successfully left the following group:**\n\n${groupCache.print(message.guild.members, groupId)}`
+      `**Successfully left the following group:**\n\n${groupCache.print(groupId)}`
     );
   } catch (e) {
     message.channel.send(`Error: ${e.message}`);
@@ -169,8 +196,13 @@ const listPromise = (
   config: Config,
   resolve: (cache: string) => any
 ) => {
-  let output = groupCache.printAll(message.guild.members);
-  message.channel.send(output);
+  let output = groupCache.printAll();
+  if (output) {
+    message.channel.send(output);
+  }
+  else {
+    message.channel.send("There are currently no groups!");
+  }
   resolve(output);
 };
 
