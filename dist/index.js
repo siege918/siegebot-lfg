@@ -70,14 +70,7 @@ const removePromise = (message, config, resolve) => {
         //Remove command by removing all before first space
         const q = message.content.substring(message.content.indexOf(' ')).trim();
         const params = q.split(' ').map(arg => arg.trim());
-        let groupId = -1;
-        for (let i = 0; i < params.length; i++) {
-            let possibleGroupId = Number.parseInt(params[i]);
-            if (Number.isInteger(possibleGroupId)) {
-                groupId = possibleGroupId;
-                break;
-            }
-        }
+        let groupId = params[0];
         var group = groupCache.remove(message.author.id, groupId);
         if (!group) {
             throw new Error("Group deletion unsuccessful.");
@@ -94,15 +87,8 @@ const joinPromise = (message, config, resolve) => {
         //Remove command by removing all before first space
         const q = message.content.substring(message.content.indexOf(' ')).trim();
         const params = q.split(' ').map(arg => arg.trim());
-        let groupId = -1;
-        for (let i = 0; i < params.length; i++) {
-            let possibleGroupId = Number.parseInt(params[i]);
-            if (Number.isInteger(possibleGroupId)) {
-                groupId = possibleGroupId;
-                break;
-            }
-        }
-        var group = groupCache.joinGroup(message.member, groupId);
+        let groupId = params[0];
+        groupCache.joinGroup(message.member, groupId);
         message.channel.send(`**Successfully joined the following group:**\n\n${groupCache.print(groupId)}`);
     }
     catch (e) {
@@ -115,14 +101,7 @@ const leavePromise = (message, config, resolve) => {
         //Remove command by removing all before first space
         const q = message.content.substring(message.content.indexOf(' ')).trim();
         const params = q.split(' ').map(arg => arg.trim());
-        let groupId = -1;
-        for (let i = 0; i < params.length; i++) {
-            let possibleGroupId = Number.parseInt(params[i]);
-            if (Number.isInteger(possibleGroupId)) {
-                groupId = possibleGroupId;
-                break;
-            }
-        }
+        let groupId = params[0];
         var group = groupCache.leaveGroup(message.author.id, groupId);
         message.channel.send(`**Successfully left the following group:**\n\n${groupCache.print(groupId)}`);
     }

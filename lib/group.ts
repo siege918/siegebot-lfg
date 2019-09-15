@@ -15,6 +15,7 @@ class Player {
 }
 
 export class Group {
+    public id: string;
     public gameName: string;
     public players: Map<Snowflake, Player>;
     public maxPlayers: number;
@@ -24,7 +25,8 @@ export class Group {
     public hasHad15MinuteUpdate: boolean;
     public hasHadStartingUpdate: boolean;
 
-    constructor(creator: GuildMember, gameName: string, maxPlayers: number, startTime: Moment, channel: TextChannel) {
+    constructor(id: string, creator: GuildMember, gameName: string, maxPlayers: number, startTime: Moment, channel: TextChannel) {
+        this.id = id;
         this.gameName = gameName;
         this.maxPlayers = maxPlayers;
         this.startTime = startTime;
@@ -61,7 +63,8 @@ export class Group {
 
     print(doMention: boolean = false): string {
         return (
-`    *Game*: ${this.gameName}
+`    **ID**: ${this.id} 
+    *Game*: ${this.gameName}
     *Created by*: ${this.creator.Tag}
     *Players*: ${[...this.players.values()].map(player => doMention ? player.Mention : player.Tag).join(', ')}
     *Start Time*: ${this.startTime.format(DATE_FORMAT)} (${this.startTime.fromNow()})

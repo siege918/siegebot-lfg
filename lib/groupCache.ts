@@ -1,16 +1,21 @@
 import { Group } from './group';
 import { Snowflake, TextChannel, GuildMember } from 'discord.js';
 import * as moment from 'moment';
+import { generate as generateShortId } from 'shortid'
 
 export class GroupCache {
-  private _cache: Group[];
+  private _cache: Map<string, Group>;
 
   constructor() {
-    this._cache = [];
+    this._cache = new Map<string, Group>();
   }
 
-  get(index: number): Group {
-    let group = this._cache[index];
+  has(id: string): boolean {
+    return this._cache.has(id);
+  }
+
+  get(id: string): Group {
+    let group = this._cache.get(id);
 
     if (!group) {
       throw new RangeError('The specified group does not exist.');
@@ -19,24 +24,29 @@ export class GroupCache {
     return group;
   }
 
-  print(index: number, doMention: boolean = false): string {
+  print(id: string, doMention: boolean = false): string {
+    let group = this._cache.get(id);
+    
+    if (!group) {
+      return '';
+    }
+
     return (
-`**Group Number ${index}**
-${this._cache[index].print(doMention)}
-*Join this group by typing '.join ${index}'
-Leave this group by typing '.leave ${index}'*
+`${group.print(doMention)}
+*Join this group by typing '.join ${id}'
+Leave this group by typing '.leave ${id}'*
 `
     );
   }
 
   printAll(): string {
-    return this._cache.map(
-        (group: Group, index) => this.print(index)
+    return [...this._cache.keys()].map(
+        (id: string) => this.print(id)
     ).join('\n---------------------------------\n\n');
   }
 
   get15MinuteGroups(): Group[] {
-    let groups = this._cache.filter(
+    let groups = [...this._cache.values()].filter(
       (group: Group) => !group.hasHad15MinuteUpdate && moment().add(15, 'minutes').isAfter(group.startTime)
     );
 
@@ -46,7 +56,7 @@ Leave this group by typing '.leave ${index}'*
   }
 
   getStartingGroups(): Group[] {
-    let groups = this._cache.filter(
+    let groups = [...this._cache.values()].filter(
       (group: Group) => !group.hasHadStartingUpdate && moment().isAfter(group.startTime)
     );
 
@@ -56,9 +66,11 @@ Leave this group by typing '.leave ${index}'*
   }
 
   housekeep() {
-    this._cache = this._cache.filter(
-      (group: Group) => !group.hasHadStartingUpdate
-    );
+    for (let group of this._cache.values()) {
+      if (group.hasHadStartingUpdate) {
+        this._cache.delete(group.id);
+      }
+    }
   }
 
   create(
@@ -67,31 +79,39 @@ Leave this group by typing '.leave ${index}'*
     maxPlayers: number,
     startTime: moment.Moment,
     channel: TextChannel
-  ): number {
-    return (
-      this._cache.push(new Group(creator, gameName, maxPlayers, startTime, channel)) - 1
-    );
+  ): string {
+    let id = '';
+
+    do {
+      id = generateShortId().substring(0, 4);
+    } while (this.has(id))
+
+    this._cache.set(id, new Group(id, creator, gameName, maxPlayers, startTime, channel))
+
+    return id;
   }
 
-  remove(creator: Snowflake, index: number): Group {
-    let group = this.get(index);
+  remove(creator: Snowflake, id: string): Group {
+    let group = this.get(id);
 
     if (group.creator.Id !== creator) {
       throw new Error('Groups can only be removed by their creator.');
     }
 
-    return this._cache.splice(index, 1)[0];
+    this._cache.delete(id)
+
+    return group;
   }
 
-  joinGroup(player: GuildMember, index: number): Group {
-    let group = this.get(index);
+  joinGroup(player: GuildMember, id: string): Group {
+    let group = this.get(id);
 
     group.addPlayer(player);
     return group;
   }
 
-  leaveGroup(player: Snowflake, index: number): Group {
-    let group = this.get(index);
+  leaveGroup(player: Snowflake, id: string): Group {
+    let group = this.get(id);
 
     group.removePlayer(player);
     return group;
@@ -101,7 +121,7 @@ Leave this group by typing '.leave ${index}'*
     return JSON.stringify(this._cache);
   }
 
-  import(data: string): Group[] {
+  import(data: string): Map<string, Group> {
     this._cache = JSON.parse(data);
     return this._cache;
   }

@@ -4,16 +4,17 @@ import * as moment from 'moment';
 export declare class GroupCache {
     private _cache;
     constructor();
-    get(index: number): Group;
-    print(index: number, doMention?: boolean): string;
+    has(id: string): boolean;
+    get(id: string): Group;
+    print(id: string, doMention?: boolean): string;
     printAll(): string;
     get15MinuteGroups(): Group[];
     getStartingGroups(): Group[];
     housekeep(): void;
-    create(creator: GuildMember, gameName: string, maxPlayers: number, startTime: moment.Moment, channel: TextChannel): number;
-    remove(creator: Snowflake, index: number): Group;
-    joinGroup(player: GuildMember, index: number): Group;
-    leaveGroup(player: Snowflake, index: number): Group;
+    create(creator: GuildMember, gameName: string, maxPlayers: number, startTime: moment.Moment, channel: TextChannel): string;
+    remove(creator: Snowflake, id: string): Group;
+    joinGroup(player: GuildMember, id: string): Group;
+    leaveGroup(player: Snowflake, id: string): Group;
     export(): string;
-    import(data: string): Group[];
+    import(data: string): Map<string, Group>;
 }

@@ -7,6 +7,7 @@ declare class Player {
     constructor(guildMember: GuildMember);
 }
 export declare class Group {
+    id: string;
     gameName: string;
     players: Map<Snowflake, Player>;
     maxPlayers: number;
@@ -15,7 +16,7 @@ export declare class Group {
     channel: TextChannel;
     hasHad15MinuteUpdate: boolean;
     hasHadStartingUpdate: boolean;
-    constructor(creator: GuildMember, gameName: string, maxPlayers: number, startTime: Moment, channel: TextChannel);
+    constructor(id: string, creator: GuildMember, gameName: string, maxPlayers: number, startTime: Moment, channel: TextChannel);
     isFull(): boolean;
     addPlayer(player: GuildMember): void;
     removePlayer(player: Snowflake): void;

@@ -2,57 +2,74 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const group_1 = require("./group");
 const moment = require("moment");
+const shortid_1 = require("shortid");
 class GroupCache {
     constructor() {
-        this._cache = [];
+        this._cache = new Map();
     }
-    get(index) {
-        let group = this._cache[index];
+    has(id) {
+        return this._cache.has(id);
+    }
+    get(id) {
+        let group = this._cache.get(id);
         if (!group) {
             throw new RangeError('The specified group does not exist.');
         }
         return group;
     }
-    print(index, doMention = false) {
-        return (`**Group Number ${index}**
-${this._cache[index].print(doMention)}
-*Join this group by typing '.join ${index}'
-Leave this group by typing '.leave ${index}'*
+    print(id, doMention = false) {
+        let group = this._cache.get(id);
+        if (!group) {
+            return '';
+        }
+        return (`${group.print(doMention)}
+*Join this group by typing '.join ${id}'
+Leave this group by typing '.leave ${id}'*
 `);
     }
     printAll() {
-        return this._cache.map((group, index) => this.print(index)).join('\n---------------------------------\n\n');
+        return [...this._cache.keys()].map((id) => this.print(id)).join('\n---------------------------------\n\n');
     }
     get15MinuteGroups() {
-        let groups = this._cache.filter((group) => !group.hasHad15MinuteUpdate && moment().add(15, 'minutes').isAfter(group.startTime));
+        let groups = [...this._cache.values()].filter((group) => !group.hasHad15MinuteUpdate && moment().add(15, 'minutes').isAfter(group.startTime));
         groups.forEach((group) => { group.hasHad15MinuteUpdate = true; });
         return groups;
     }
     getStartingGroups() {
-        let groups = this._cache.filter((group) => !group.hasHadStartingUpdate && moment().isAfter(group.startTime));
+        let groups = [...this._cache.values()].filter((group) => !group.hasHadStartingUpdate && moment().isAfter(group.startTime));
         groups.forEach((group) => { group.hasHadStartingUpdate = true; });
         return groups;
     }
     housekeep() {
-        this._cache = this._cache.filter((group) => !group.hasHadStartingUpdate);
+        for (let group of this._cache.values()) {
+            if (group.hasHadStartingUpdate) {
+                this._cache.delete(group.id);
+            }
+        }
     }
     create(creator, gameName, maxPlayers, startTime, channel) {
-        return (this._cache.push(new group_1.Group(creator, gameName, maxPlayers, startTime, channel)) - 1);
+        let id = '';
+        do {
+            id = shortid_1.generate().substring(0, 4);
+        } while (this.has(id));
+        this._cache.set(id, new group_1.Group(id, creator, gameName, maxPlayers, startTime, channel));
+        return id;
     }
-    remove(creator, index) {
-        let group = this.get(index);
+    remove(creator, id) {
+        let group = this.get(id);
         if (group.creator.Id !== creator) {
             throw new Error('Groups can only be removed by their creator.');
         }
-        return this._cache.splice(index, 1)[0];
+        this._cache.delete(id);
+        return group;
     }
-    joinGroup(player, index) {
-        let group = this.get(index);
+    joinGroup(player, id) {
+        let group = this.get(id);
         group.addPlayer(player);
         return group;
     }
-    leaveGroup(player, index) {
-        let group = this.get(index);
+    leaveGroup(player, id) {
+        let group = this.get(id);
         group.removePlayer(player);
         return group;
     }

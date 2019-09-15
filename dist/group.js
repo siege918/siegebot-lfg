@@ -9,7 +9,8 @@ class Player {
     }
 }
 class Group {
-    constructor(creator, gameName, maxPlayers, startTime, channel) {
+    constructor(id, creator, gameName, maxPlayers, startTime, channel) {
+        this.id = id;
         this.gameName = gameName;
         this.maxPlayers = maxPlayers;
         this.startTime = startTime;
@@ -37,7 +38,8 @@ class Group {
         this.players.delete(player);
     }
     print(doMention = false) {
-        return (`    *Game*: ${this.gameName}
+        return (`    **ID**: ${this.id} 
+    *Game*: ${this.gameName}
     *Created by*: ${this.creator.Tag}
     *Players*: ${[...this.players.values()].map(player => doMention ? player.Mention : player.Tag).join(', ')}
     *Start Time*: ${this.startTime.format(constants_1.DATE_FORMAT)} (${this.startTime.fromNow()})

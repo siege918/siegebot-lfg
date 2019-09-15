@@ -1,7 +1,6 @@
 import { Message, TextChannel } from 'discord.js';
 import { Config } from './config';
 import { GroupCache } from './groupCache';
-import { Group } from './group';
 import * as moment from 'moment';
 import { DATE_FORMAT } from './constants';
 import * as cron from 'node-cron';
@@ -106,14 +105,7 @@ const removePromise = (
     const q = message.content.substring(message.content.indexOf(' ')).trim();
     const params = q.split(' ').map(arg => arg.trim());
 
-    let groupId = -1;
-    for (let i = 0; i < params.length; i++) {
-      let possibleGroupId = Number.parseInt(params[i]);
-      if (Number.isInteger(possibleGroupId)) {
-        groupId = possibleGroupId;
-        break;
-      }
-    }
+    let groupId = params[0];
 
     var group = groupCache.remove(message.author.id, groupId);
 
@@ -141,16 +133,9 @@ const joinPromise = (
     const q = message.content.substring(message.content.indexOf(' ')).trim();
     const params = q.split(' ').map(arg => arg.trim());
 
-    let groupId = -1;
-    for (let i = 0; i < params.length; i++) {
-      let possibleGroupId = Number.parseInt(params[i]);
-      if (Number.isInteger(possibleGroupId)) {
-        groupId = possibleGroupId;
-        break;
-      }
-    }
+    let groupId = params[0];
 
-    var group = groupCache.joinGroup(message.member, groupId);
+    groupCache.joinGroup(message.member, groupId);
     message.channel.send(
       `**Successfully joined the following group:**\n\n${groupCache.print(groupId)}`
     );
@@ -171,14 +156,7 @@ const leavePromise = (
     const q = message.content.substring(message.content.indexOf(' ')).trim();
     const params = q.split(' ').map(arg => arg.trim());
 
-    let groupId = -1;
-    for (let i = 0; i < params.length; i++) {
-      let possibleGroupId = Number.parseInt(params[i]);
-      if (Number.isInteger(possibleGroupId)) {
-        groupId = possibleGroupId;
-        break;
-      }
-    }
+    let groupId = params[0];
 
     var group = groupCache.leaveGroup(message.author.id, groupId);
     message.channel.send(
