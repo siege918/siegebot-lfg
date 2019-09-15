@@ -20,16 +20,19 @@ export class GroupCache {
   }
 
   print(users: Collection<Snowflake, GuildMember>, index: number) {
-    return `**Group Number ${index}**
-    ${this._cache[index].print(users)}
-    *Join this group by typing '.join ${index}'
-    Leave this group by typing '.leave ${index}'*`;
+    return (
+`**Group Number ${index}**
+${this._cache[index].print(users)}
+*Join this group by typing '.join ${index}'
+Leave this group by typing '.leave ${index}'*
+`
+    );
   }
 
   printAll(users: Collection<Snowflake, GuildMember>) {
     return this._cache.map(
         (group: Group, index) => this.print(users, index)
-    ).join('\n---------------------------------\n');
+    ).join('\n---------------------------------\n\n');
   }
 
   create(
@@ -43,26 +46,28 @@ export class GroupCache {
     );
   }
 
-  remove(creator: Snowflake, index: number) {
+  remove(creator: Snowflake, index: number): Group {
     let group = this.get(index);
 
     if (group.creator !== creator) {
       throw new Error('Groups can only be removed by their creator.');
     }
 
-    this._cache.splice(index, 1);
+    return this._cache.splice(index, 1)[0];
   }
 
-  joinGroup(player: Snowflake, index: number) {
+  joinGroup(player: Snowflake, index: number): Group {
     let group = this.get(index);
 
     group.addPlayer(player);
+    return group;
   }
 
-  leaveGroup(player: Snowflake, index: number) {
+  leaveGroup(player: Snowflake, index: number): Group {
     let group = this.get(index);
 
     group.removePlayer(player);
+    return group;
   }
 
   export(): string {

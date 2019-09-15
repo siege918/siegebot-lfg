@@ -10,7 +10,7 @@ class Group {
         this.players = new Set([creator]);
     }
     isFull() {
-        return this.maxPlayers > 0 && this.players.size <= this.maxPlayers;
+        return this.maxPlayers > 0 && this.players.size >= this.maxPlayers;
     }
     addPlayer(player) {
         if (this.isFull()) {
@@ -32,10 +32,11 @@ class Group {
             const creatorMember = users.get(snowflake);
             return creatorMember ? creatorMember.user.tag : "Not found";
         };
-        return `*Created by*: ${getTag(this.creator)}
-        *Players*: ${[...this.players].map(player => getTag(player)).join(', ')}
-        *Start Time*: ${this.startTime.format(constants_1.DATE_FORMAT)}
-        *Max Players*: ${this.players || 'No Limit'}`;
+        return (`    *Game*: ${this.gameName}
+    *Created by*: ${getTag(this.creator)}
+    *Players*: ${[...this.players].map(player => getTag(player)).join(', ')}
+    *Start Time*: ${this.startTime.format(constants_1.DATE_FORMAT)} (${this.startTime.fromNow()})
+    *Max Players*: ${this.maxPlayers || 'No Limit'}`);
     }
 }
 exports.Group = Group;

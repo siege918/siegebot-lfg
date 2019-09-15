@@ -19,7 +19,7 @@ export class Group {
     }
 
     isFull(): boolean {
-        return this.maxPlayers > 0 && this.players.size <= this.maxPlayers;
+        return this.maxPlayers > 0 && this.players.size >= this.maxPlayers;
     }
 
     addPlayer(player: Snowflake) {
@@ -48,9 +48,12 @@ export class Group {
             return creatorMember ? creatorMember.user.tag : "Not found";
         }
 
-        return `*Created by*: ${getTag(this.creator)}
-        *Players*: ${[...this.players].map(player => getTag(player)).join(', ')}
-        *Start Time*: ${this.startTime.format(DATE_FORMAT)}
-        *Max Players*: ${this.players || 'No Limit'}`
+        return (
+`    *Game*: ${this.gameName}
+    *Created by*: ${getTag(this.creator)}
+    *Players*: ${[...this.players].map(player => getTag(player)).join(', ')}
+    *Start Time*: ${this.startTime.format(DATE_FORMAT)} (${this.startTime.fromNow()})
+    *Max Players*: ${this.maxPlayers || 'No Limit'}`
+        );
     }
 }

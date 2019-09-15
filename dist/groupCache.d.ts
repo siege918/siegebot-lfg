@@ -8,9 +8,9 @@ export declare class GroupCache {
     print(users: Collection<Snowflake, GuildMember>, index: number): string;
     printAll(users: Collection<Snowflake, GuildMember>): string;
     create(creator: Snowflake, gameName: string, maxPlayers: number, startTime: moment.Moment): number;
-    remove(creator: Snowflake, index: number): void;
-    joinGroup(player: Snowflake, index: number): void;
-    leaveGroup(player: Snowflake, index: number): void;
+    remove(creator: Snowflake, index: number): Group;
+    joinGroup(player: Snowflake, index: number): Group;
+    leaveGroup(player: Snowflake, index: number): Group;
     export(): string;
     import(data: string): Group[];
 }

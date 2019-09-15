@@ -13,13 +13,14 @@ class GroupCache {
         return group;
     }
     print(users, index) {
-        return `**Group Number ${index}**
-    ${this._cache[index].print(users)}
-    *Join this group by typing '.join ${index}'
-    Leave this group by typing '.leave ${index}'*`;
+        return (`**Group Number ${index}**
+${this._cache[index].print(users)}
+*Join this group by typing '.join ${index}'
+Leave this group by typing '.leave ${index}'*
+`);
     }
     printAll(users) {
-        return this._cache.map((group, index) => this.print(users, index)).join('\n---------------------------------\n');
+        return this._cache.map((group, index) => this.print(users, index)).join('\n---------------------------------\n\n');
     }
     create(creator, gameName, maxPlayers, startTime) {
         return (this._cache.push(new group_1.Group(creator, gameName, maxPlayers, startTime)) - 1);
@@ -29,15 +30,17 @@ class GroupCache {
         if (group.creator !== creator) {
             throw new Error('Groups can only be removed by their creator.');
         }
-        this._cache.splice(index, 1);
+        return this._cache.splice(index, 1)[0];
     }
     joinGroup(player, index) {
         let group = this.get(index);
         group.addPlayer(player);
+        return group;
     }
     leaveGroup(player, index) {
         let group = this.get(index);
         group.removePlayer(player);
+        return group;
     }
     export() {
         return JSON.stringify(this._cache);
