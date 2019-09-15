@@ -63,7 +63,7 @@ export class Group {
 
     print(doMention: boolean = false): string {
         return (
-`    **ID**: ${this.id} 
+`    *ID*: ${this.id} 
     *Game*: ${this.gameName}
     *Created by*: ${this.creator.Tag}
     *Players*: ${[...this.players.values()].map(player => doMention ? player.Mention : player.Tag).join(', ')}
