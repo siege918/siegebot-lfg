@@ -1,0 +1,19 @@
+{
+  "name": "siegebot-lfg",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/siege918/siegebot-lfg.git"
+  },
+  "author": "Collin Johnson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/siege918/siegebot-lfg/issues"
+  },
+  "homepage": "https://github.com/siege918/siegebot-lfg#readme"
+}
