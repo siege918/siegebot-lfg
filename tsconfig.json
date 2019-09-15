@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "target": "es2015",
+        "module": "commonjs",
+        "declaration": true,
+        "outDir": "./dist",
+        "types": [
+            "discord.js",
+            "node"
+        ],
+        "strict": true,
+        "strictPropertyInitialization": false
+    }
+}

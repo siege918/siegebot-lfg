@@ -2,8 +2,10 @@
   "name": "siegebot-lfg",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -15,5 +17,16 @@
   "bugs": {
     "url": "https://github.com/siege918/siegebot-lfg/issues"
   },
-  "homepage": "https://github.com/siege918/siegebot-lfg#readme"
+  "homepage": "https://github.com/siege918/siegebot-lfg#readme",
+  "dependencies": {
+    "@types/hashids": "^1.0.30",
+    "@types/node": "^12.7.5",
+    "discord.js": "^11.4.2",
+    "hashids": "^2.0.1",
+    "moment": "^2.24.0"
+  },
+  "devDependencies": {
+    "ts-node": "^8.3.0",
+    "typescript": "^3.6.3"
+  }
 }
