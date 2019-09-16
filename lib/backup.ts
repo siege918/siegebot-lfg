@@ -57,7 +57,9 @@ export function backup(groupCache: GroupCache) {
     if (!S3Client) return;
     let backupDate = new Date();
 
-    let backupName = `LFG_${backupDate.toISOString}.json`;
+    let backupName = `LFG_${backupDate.toISOString()}.json`;
+    console.log(groupCache);
+    console.log(groupCache.export());
 
     S3Client.upload({
         Bucket: bucketName,

@@ -5,6 +5,7 @@ const moment = require("moment");
 const constants_1 = require("./constants");
 const cron = require("node-cron");
 const backup_1 = require("./backup");
+let discordClient;
 let groupCache = new groupCache_1.GroupCache();
 backup_1.restore(groupCache);
 moment.relativeTimeThreshold('M', 12);
@@ -21,12 +22,20 @@ cron.schedule('*/15 * * * *', () => {
 cron.schedule('* * * * *', () => {
     groupCache.housekeep();
     let fifteenMinuteGroups = groupCache.get15MinuteGroups();
-    for (var i = 0; i < fifteenMinuteGroups.length; i++) {
-        fifteenMinuteGroups[i].channel.send(`A game is starting in 15 minutes!\n\n${fifteenMinuteGroups[i].print(true)}`);
+    for (let i = 0; i < fifteenMinuteGroups.length; i++) {
+        let channel = discordClient.channels.get(fifteenMinuteGroups[i].channel);
+        if (channel) {
+            let textChannel = channel;
+            textChannel.send(`A game is starting in 15 minutes!\n\n${fifteenMinuteGroups[i].print(true)}`);
+        }
     }
     let startingGroups = groupCache.getStartingGroups();
     for (var i = 0; i < startingGroups.length; i++) {
-        startingGroups[i].channel.send(`A game is starting now!\n\n${startingGroups[i].print(true)}`);
+        let channel = discordClient.channels.get(startingGroups[i].channel);
+        if (channel) {
+            let textChannel = channel;
+            textChannel.send(`A game is starting now!\n\n${startingGroups[i].print(true)}`);
+        }
     }
 });
 /**
@@ -57,7 +66,7 @@ const createPromise = (message, config, resolve) => {
         if (Number.isNaN(maxPlayers)) {
             maxPlayers = 0;
         }
-        let groupId = groupCache.create(message.member, gameName, maxPlayers, startTime, message.channel);
+        let groupId = groupCache.create(message.member, gameName, maxPlayers, startTime, message.channel.id);
         message.channel.send(`Group created!\n\n${groupCache.print(groupId)}`);
     }
     catch (e) {
@@ -113,13 +122,26 @@ const leavePromise = (message, config, resolve) => {
 const listPromise = (message, config, resolve) => {
     let output = groupCache.printAll();
     if (output) {
-        message.channel.send(output);
+        message.channel.send(`Here are the upcoming games:
+
+${output}`);
     }
     else {
         message.channel.send("There are currently no groups!");
     }
     resolve(output);
 };
+function siegebotInit(client) {
+    discordClient = client;
+}
+exports.siegebotInit = siegebotInit;
+function doBackup() {
+    return new Promise((resolve) => {
+        backup_1.backup(groupCache);
+        resolve(groupCache);
+    });
+}
+exports.doBackup = doBackup;
 function create(message, config) {
     return new Promise((resolve) => {
         createPromise(message, config, resolve);

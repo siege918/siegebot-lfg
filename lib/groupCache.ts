@@ -1,4 +1,4 @@
-import { Group } from './group';
+import { Group, GroupParams, Player } from './group';
 import { Snowflake, TextChannel, GuildMember } from 'discord.js';
 import * as moment from 'moment';
 import { generate as generateShortId } from 'shortid'
@@ -74,7 +74,7 @@ Leave this group by typing '.leave ${id}'*
   }
 
   create(
-    creator: GuildMember,
+    creatorMember: GuildMember,
     gameName: string,
     maxPlayers: number,
     startTime: moment.Moment,
@@ -86,7 +86,22 @@ Leave this group by typing '.leave ${id}'*
       id = generateShortId().substring(0, 4);
     } while (this.has(id))
 
-    this._cache.set(id, new Group(id, creator, gameName, maxPlayers, startTime, channel))
+    let creator = {Id: creatorMember.id, Tag: creatorMember.user.tag, Mention: creatorMember.toString()};
+
+    let players = new Map();
+    players.set(creatorMember.id, creator)
+
+    let groupData: GroupParams = {
+      id,
+      gameName,
+      players,
+      maxPlayers,
+      startTime: startTime.toDate(),
+      creator,
+      channel
+    }
+
+    this._cache.set(id, new Group(groupData))
 
     return id;
   }
@@ -122,7 +137,25 @@ Leave this group by typing '.leave ${id}'*
   }
 
   import(data: string): Map<string, Group> {
-    this._cache = JSON.parse(data);
+    let importData = new Map<Snowflake, GroupParams>(JSON.parse(data));
+    let newCache = new Map<Snowflake, Group>()
+
+    for (let key of importData.keys()) {
+      let importDatum = importData.get(key);
+
+      if (importDatum) {
+        if (importDatum.players && typeof importDatum.players[Symbol.iterator] === 'function') {
+          importDatum.players = new Map<Snowflake, Player>(importDatum.players);
+        }
+        else {
+          importDatum.players = new Map<Snowflake, Player>();
+        }
+
+        newCache.set(key, new Group(importDatum));
+      }
+    }
+
+    this._cache = newCache;
     return this._cache;
   }
 }

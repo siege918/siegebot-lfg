@@ -47,12 +47,24 @@ Leave this group by typing '.leave ${id}'*
             }
         }
     }
-    create(creator, gameName, maxPlayers, startTime, channel) {
+    create(creatorMember, gameName, maxPlayers, startTime, channel) {
         let id = '';
         do {
             id = shortid_1.generate().substring(0, 4);
         } while (this.has(id));
-        this._cache.set(id, new group_1.Group(id, creator, gameName, maxPlayers, startTime, channel));
+        let creator = { Id: creatorMember.id, Tag: creatorMember.user.tag, Mention: creatorMember.toString() };
+        let players = new Map();
+        players.set(creatorMember.id, creator);
+        let groupData = {
+            id,
+            gameName,
+            players,
+            maxPlayers,
+            startTime: startTime.toDate(),
+            creator,
+            channel
+        };
+        this._cache.set(id, new group_1.Group(groupData));
         return id;
     }
     remove(creator, id) {
@@ -77,7 +89,21 @@ Leave this group by typing '.leave ${id}'*
         return JSON.stringify(this._cache);
     }
     import(data) {
-        this._cache = JSON.parse(data);
+        let importData = new Map(JSON.parse(data));
+        let newCache = new Map();
+        for (let key of importData.keys()) {
+            let importDatum = importData.get(key);
+            if (importDatum) {
+                if (importDatum.players && typeof importDatum.players[Symbol.iterator] === 'function') {
+                    importDatum.players = new Map(importDatum.players);
+                }
+                else {
+                    importDatum.players = new Map();
+                }
+                newCache.set(key, new group_1.Group(importDatum));
+            }
+        }
+        this._cache = newCache;
         return this._cache;
     }
 }

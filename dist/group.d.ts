@@ -1,25 +1,35 @@
-import { Snowflake, TextChannel, GuildMember } from "discord.js";
+import { Snowflake, GuildMember } from "discord.js";
 import { Moment } from "moment";
-declare class Player {
+export interface Player {
     Id: Snowflake;
     Tag: string;
     Mention: string;
-    constructor(guildMember: GuildMember);
 }
-export declare class Group {
+export interface GroupParams {
     id: string;
     gameName: string;
     players: Map<Snowflake, Player>;
     maxPlayers: number;
-    startTime: Moment;
+    startTime: Date;
     creator: Player;
-    channel: TextChannel;
+    channel: Snowflake;
+    hasHad15MinuteUpdate?: boolean;
+    hasHadStartingUpdate?: boolean;
+}
+export declare class Group implements GroupParams {
+    id: string;
+    gameName: string;
+    players: Map<Snowflake, Player>;
+    maxPlayers: number;
+    startTime: Date;
+    startTimeMoment: Moment;
+    creator: Player;
+    channel: Snowflake;
     hasHad15MinuteUpdate: boolean;
     hasHadStartingUpdate: boolean;
-    constructor(id: string, creator: GuildMember, gameName: string, maxPlayers: number, startTime: Moment, channel: TextChannel);
+    constructor(data: GroupParams);
     isFull(): boolean;
     addPlayer(player: GuildMember): void;
     removePlayer(player: Snowflake): void;
     print(doMention?: boolean): string;
 }
-export {};

@@ -4,11 +4,9 @@ import { GroupCache } from './groupCache';
 import * as moment from 'moment';
 import { DATE_FORMAT } from './constants';
 import * as cron from 'node-cron';
-import {backup, restore} from './backup';
 
 let discordClient: Client;
 let groupCache: GroupCache = new GroupCache();
-restore(groupCache);
 
 moment.relativeTimeThreshold('M', 12);
 moment.relativeTimeThreshold('d', 30);
@@ -16,11 +14,6 @@ moment.relativeTimeThreshold('h', 24);
 moment.relativeTimeThreshold('m', 120);
 moment.relativeTimeThreshold('s', 360);
 moment.relativeTimeThreshold('ss', 3);
-
-//Automatically backup
-cron.schedule('*/15 * * * *', () => {
-  backup(groupCache);
-});
 
 //Alert people when a game is 15 minutes away, or starting now
 cron.schedule('* * * * *', () => {
@@ -185,7 +178,11 @@ const listPromise = (
 ) => {
   let output = groupCache.printAll();
   if (output) {
-    message.channel.send(output);
+    message.channel.send(
+`Here are the upcoming games:
+
+${output}`
+      );
   }
   else {
     message.channel.send("There are currently no groups!");

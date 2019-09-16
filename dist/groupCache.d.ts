@@ -1,5 +1,5 @@
 import { Group } from './group';
-import { Snowflake, TextChannel, GuildMember } from 'discord.js';
+import { Snowflake, GuildMember } from 'discord.js';
 import * as moment from 'moment';
 export declare class GroupCache {
     private _cache;
@@ -11,7 +11,7 @@ export declare class GroupCache {
     get15MinuteGroups(): Group[];
     getStartingGroups(): Group[];
     housekeep(): void;
-    create(creator: GuildMember, gameName: string, maxPlayers: number, startTime: moment.Moment, channel: TextChannel): string;
+    create(creatorMember: GuildMember, gameName: string, maxPlayers: number, startTime: moment.Moment, channel: Snowflake): string;
     remove(creator: Snowflake, id: string): Group;
     joinGroup(player: GuildMember, id: string): Group;
     leaveGroup(player: Snowflake, id: string): Group;
