@@ -2,16 +2,10 @@ import { Snowflake, TextChannel, GuildMember } from "discord.js";
 import { Moment } from "moment";
 import { DATE_FORMAT } from './constants';
 
-class Player {
+interface Player {
     Id: Snowflake;
     Tag: string;
     Mention: string;
-
-    constructor(guildMember: GuildMember) {
-        this.Id = guildMember.id;
-        this.Tag = guildMember.user.tag;
-        this.Mention = guildMember.toString();
-    }
 }
 
 export class Group {
@@ -30,7 +24,7 @@ export class Group {
         this.gameName = gameName;
         this.maxPlayers = maxPlayers;
         this.startTime = startTime;
-        this.creator = new Player(creator);
+        this.creator = { Id: creator.id, Tag: creator.user.tag, Mention: creator.toString() };
         this.channel = channel;
 
         this.players = new Map<Snowflake, Player>();
@@ -50,7 +44,7 @@ export class Group {
             throw new Error("You can't join a group that you're already in.");
         }
 
-        this.players.set(player.id, new Player(player));
+        this.players.set(player.id, { Id: player.id, Tag: player.user.tag, Mention: player.toString() });
     }
 
     removePlayer(player: Snowflake) {
