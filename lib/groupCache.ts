@@ -78,7 +78,7 @@ Leave this group by typing '.leave ${id}'*
     gameName: string,
     maxPlayers: number,
     startTime: moment.Moment,
-    channel: TextChannel
+    channel: Snowflake
   ): string {
     let id = '';
 

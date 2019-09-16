@@ -1,6 +1,7 @@
 import { Snowflake, TextChannel, GuildMember } from "discord.js";
 import { Moment } from "moment";
 import { DATE_FORMAT } from './constants';
+import moment = require("moment");
 
 interface Player {
     Id: Snowflake;
@@ -15,17 +16,17 @@ export class Group {
     public maxPlayers: number;
     public startTime: Moment;
     public creator: Player;
-    public channel: TextChannel;
+    public channel: Snowflake;
     public hasHad15MinuteUpdate: boolean;
     public hasHadStartingUpdate: boolean;
 
-    constructor(id: string, creator: GuildMember, gameName: string, maxPlayers: number, startTime: Moment, channel: TextChannel) {
-        this.id = id;
-        this.gameName = gameName;
-        this.maxPlayers = maxPlayers;
-        this.startTime = startTime;
-        this.creator = { Id: creator.id, Tag: creator.user.tag, Mention: creator.toString() };
-        this.channel = channel;
+    constructor(id?: string, creator?: GuildMember, gameName?: string, maxPlayers?: number, startTime?: Moment, channel?: Snowflake) {
+        this.id = id || "";
+        this.gameName = gameName || "";
+        this.maxPlayers = maxPlayers || 0;
+        this.startTime = startTime || moment().add(25, 'years');
+        this.creator = creator ? { Id: creator.id, Tag: creator.user.tag, Mention: creator.toString() } : {Id: '', Tag: '', Mention: ''};
+        this.channel = channel || "";
 
         this.players = new Map<Snowflake, Player>();
         this.players.set(this.creator.Id, this.creator);

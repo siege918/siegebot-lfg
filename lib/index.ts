@@ -1,4 +1,4 @@
-import { Message, TextChannel } from 'discord.js';
+import { Message, TextChannel, Client } from 'discord.js';
 import { Config } from './config';
 import { GroupCache } from './groupCache';
 import * as moment from 'moment';
@@ -6,6 +6,7 @@ import { DATE_FORMAT } from './constants';
 import * as cron from 'node-cron';
 import {backup, restore} from './backup';
 
+let discordClient: Client;
 let groupCache: GroupCache = new GroupCache();
 restore(groupCache);
 
@@ -27,14 +28,22 @@ cron.schedule('* * * * *', () => {
 
   let fifteenMinuteGroups = groupCache.get15MinuteGroups();
 
-  for (var i = 0; i < fifteenMinuteGroups.length; i++) {
-    fifteenMinuteGroups[i].channel.send(`A game is starting in 15 minutes!\n\n${fifteenMinuteGroups[i].print(true)}`);
+  for (let i = 0; i < fifteenMinuteGroups.length; i++) {
+    let channel = discordClient.channels.get(fifteenMinuteGroups[i].channel);
+    if (channel) {
+      let textChannel = channel as TextChannel;
+      textChannel.send(`A game is starting in 15 minutes!\n\n${fifteenMinuteGroups[i].print(true)}`);
+    }
   }
   
   let startingGroups = groupCache.getStartingGroups();
 
   for (var i = 0; i < startingGroups.length; i++) {
-    startingGroups[i].channel.send(`A game is starting now!\n\n${startingGroups[i].print(true)}`);
+    let channel = discordClient.channels.get(startingGroups[i].channel);
+    if (channel) {
+      let textChannel = channel as TextChannel;
+      textChannel.send(`A game is starting now!\n\n${startingGroups[i].print(true)}`);
+    }
   }
 });
 
@@ -84,7 +93,7 @@ const createPromise = (
       gameName,
       maxPlayers,
       startTime,
-      message.channel as TextChannel
+      message.channel.id
     );
 
     message.channel.send(`Group created!\n\n${groupCache.print(groupId)}`);
@@ -183,6 +192,10 @@ const listPromise = (
   }
   resolve(output);
 };
+
+export function siegebotInit(client: Client) {
+  discordClient = client;
+}
 
 export function create(message: Message, config: Config) {
   return new Promise((resolve: (cache: GroupCache) => any) => {
