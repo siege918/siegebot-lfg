@@ -23,8 +23,8 @@ class GroupCache {
             return '';
         }
         return (`${group.print(doMention)}
-*Join this group by typing '.join ${id}'
-Leave this group by typing '.leave ${id}'*
+*Join this group by typing* \`\`\`.join ${id}\`\`\`
+*Leave this group by typing* \`\`\`.leave ${id}\`\`\`
 `);
     }
     printAll() {

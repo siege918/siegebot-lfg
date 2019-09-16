@@ -4,20 +4,14 @@ const groupCache_1 = require("./groupCache");
 const moment = require("moment");
 const constants_1 = require("./constants");
 const cron = require("node-cron");
-const backup_1 = require("./backup");
 let discordClient;
 let groupCache = new groupCache_1.GroupCache();
-backup_1.restore(groupCache);
 moment.relativeTimeThreshold('M', 12);
 moment.relativeTimeThreshold('d', 30);
 moment.relativeTimeThreshold('h', 24);
 moment.relativeTimeThreshold('m', 120);
 moment.relativeTimeThreshold('s', 360);
 moment.relativeTimeThreshold('ss', 3);
-//Automatically backup
-cron.schedule('*/15 * * * *', () => {
-    backup_1.backup(groupCache);
-});
 //Alert people when a game is 15 minutes away, or starting now
 cron.schedule('* * * * *', () => {
     groupCache.housekeep();
@@ -135,13 +129,6 @@ function siegebotInit(client) {
     discordClient = client;
 }
 exports.siegebotInit = siegebotInit;
-function doBackup() {
-    return new Promise((resolve) => {
-        backup_1.backup(groupCache);
-        resolve(groupCache);
-    });
-}
-exports.doBackup = doBackup;
 function create(message, config) {
     return new Promise((resolve) => {
         createPromise(message, config, resolve);
