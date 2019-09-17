@@ -25,17 +25,23 @@ cron.schedule('* * * * *', () => {
     let channel = discordClient.channels.get(fifteenMinuteGroups[i].channel);
     if (channel) {
       let textChannel = channel as TextChannel;
-      textChannel.send(`A game is starting in 15 minutes!\n\n${fifteenMinuteGroups[i].print(true)}`);
+      textChannel.send(
+        `A game is starting in 15 minutes!\n\n${fifteenMinuteGroups[i].print(
+          true
+        )}`
+      );
     }
   }
-  
+
   let startingGroups = groupCache.getStartingGroups();
 
   for (var i = 0; i < startingGroups.length; i++) {
     let channel = discordClient.channels.get(startingGroups[i].channel);
     if (channel) {
       let textChannel = channel as TextChannel;
-      textChannel.send(`A game is starting now!\n\n${startingGroups[i].print(true)}`);
+      textChannel.send(
+        `A game is starting now!\n\n${startingGroups[i].print(true)}`
+      );
     }
   }
 });
@@ -112,7 +118,7 @@ const removePromise = (
     var group = groupCache.remove(message.author.id, groupId);
 
     if (!group) {
-      throw new Error("Group deletion unsuccessful.");
+      throw new Error('Group deletion unsuccessful.');
     }
 
     message.channel.send(
@@ -139,7 +145,9 @@ const joinPromise = (
 
     groupCache.joinGroup(message.member, groupId);
     message.channel.send(
-      `**Successfully joined the following group:**\n\n${groupCache.print(groupId)}`
+      `**Successfully joined the following group:**\n\n${groupCache.print(
+        groupId
+      )}`
     );
   } catch (e) {
     message.channel.send(`Error: ${e.message}`);
@@ -162,7 +170,9 @@ const leavePromise = (
 
     var group = groupCache.leaveGroup(message.author.id, groupId);
     message.channel.send(
-      `**Successfully left the following group:**\n\n${groupCache.print(groupId)}`
+      `**Successfully left the following group:**\n\n${groupCache.print(
+        groupId
+      )}`
     );
   } catch (e) {
     message.channel.send(`Error: ${e.message}`);
@@ -179,13 +189,12 @@ const listPromise = (
   let output = groupCache.printAll();
   if (output) {
     message.channel.send(
-`Here are the upcoming games:
+      `Here are the upcoming games:
 
 ${output}`
-      );
-  }
-  else {
-    message.channel.send("There are currently no groups!");
+    );
+  } else {
+    message.channel.send('There are currently no groups!');
   }
   resolve(output);
 };

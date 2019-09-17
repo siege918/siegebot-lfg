@@ -1,7 +1,7 @@
 import { Group, GroupParams, Player } from './group';
 import { Snowflake, TextChannel, GuildMember } from 'discord.js';
 import * as moment from 'moment';
-import { generate as generateShortId } from 'shortid'
+import { generate as generateShortId } from 'shortid';
 
 export class GroupCache {
   private _cache: Map<string, Group>;
@@ -26,41 +26,48 @@ export class GroupCache {
 
   print(id: string, doMention: boolean = false): string {
     let group = this._cache.get(id);
-    
+
     if (!group) {
       return '';
     }
 
-    return (
-`${group.print(doMention)}
+    return `${group.print(doMention)}
 *Join this group by typing* \`\`\`.join ${id}\`\`\`
 *Leave this group by typing* \`\`\`.leave ${id}\`\`\`
-`
-    );
+`;
   }
 
   printAll(): string {
-    return [...this._cache.keys()].map(
-        (id: string) => this.print(id)
-    ).join('\n---------------------------------\n\n');
+    return [...this._cache.keys()]
+      .map((id: string) => this.print(id))
+      .join('\n---------------------------------\n\n');
   }
 
   get15MinuteGroups(): Group[] {
     let groups = [...this._cache.values()].filter(
-      (group: Group) => !group.hasHad15MinuteUpdate && moment().add(15, 'minutes').isAfter(group.startTime)
+      (group: Group) =>
+        !group.hasHad15MinuteUpdate &&
+        moment()
+          .add(15, 'minutes')
+          .isAfter(group.startTime)
     );
 
-    groups.forEach((group) => {group.hasHad15MinuteUpdate = true});
+    groups.forEach(group => {
+      group.hasHad15MinuteUpdate = true;
+    });
 
     return groups;
   }
 
   getStartingGroups(): Group[] {
     let groups = [...this._cache.values()].filter(
-      (group: Group) => !group.hasHadStartingUpdate && moment().isAfter(group.startTime)
+      (group: Group) =>
+        !group.hasHadStartingUpdate && moment().isAfter(group.startTime)
     );
 
-    groups.forEach((group) => {group.hasHadStartingUpdate = true});
+    groups.forEach(group => {
+      group.hasHadStartingUpdate = true;
+    });
 
     return groups;
   }
@@ -84,12 +91,16 @@ export class GroupCache {
 
     do {
       id = generateShortId().substring(0, 4);
-    } while (this.has(id))
+    } while (this.has(id));
 
-    let creator = {Id: creatorMember.id, Tag: creatorMember.user.tag, Mention: creatorMember.toString()};
+    let creator = {
+      Id: creatorMember.id,
+      Tag: creatorMember.user.tag,
+      Mention: creatorMember.toString()
+    };
 
     let players = new Map();
-    players.set(creatorMember.id, creator)
+    players.set(creatorMember.id, creator);
 
     let groupData: GroupParams = {
       id,
@@ -99,9 +110,9 @@ export class GroupCache {
       startTime: startTime.toDate(),
       creator,
       channel
-    }
+    };
 
-    this._cache.set(id, new Group(groupData))
+    this._cache.set(id, new Group(groupData));
 
     return id;
   }
@@ -113,7 +124,7 @@ export class GroupCache {
       throw new Error('Groups can only be removed by their creator.');
     }
 
-    this._cache.delete(id)
+    this._cache.delete(id);
 
     return group;
   }
@@ -138,16 +149,18 @@ export class GroupCache {
 
   import(data: string): Map<string, Group> {
     let importData = new Map<Snowflake, GroupParams>(JSON.parse(data));
-    let newCache = new Map<Snowflake, Group>()
+    let newCache = new Map<Snowflake, Group>();
 
     for (let key of importData.keys()) {
       let importDatum = importData.get(key);
 
       if (importDatum) {
-        if (importDatum.players && typeof importDatum.players[Symbol.iterator] === 'function') {
+        if (
+          importDatum.players &&
+          typeof importDatum.players[Symbol.iterator] === 'function'
+        ) {
           importDatum.players = new Map<Snowflake, Player>(importDatum.players);
-        }
-        else {
+        } else {
           importDatum.players = new Map<Snowflake, Player>();
         }
 
