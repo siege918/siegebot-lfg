@@ -5,8 +5,13 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "test": "nyc ava",
+    "test:no-coverage": "ava",
+    "open-coverage-report": "npx open ./coverage/index.html",
+    "prebuild": "npx rimraf dist",
     "build": "tsc",
-    "prettier": "prettier --write --only-changed"
+    "prettier": "prettier --write --only-changed",
+    "linter": "tslint --fix --project ."
   },
   "repository": {
     "type": "git",
