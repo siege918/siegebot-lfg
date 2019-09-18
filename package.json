@@ -59,22 +59,33 @@
       "git add"
     ]
   },
-  "dependencies": {
-    "@types/hashids": "^1.0.30",
-    "@types/node": "^12.7.5",
-    "@types/node-cron": "^2.0.2",
-    "@types/shortid": "0.0.29",
-    "aws-sdk": "^2.528.0",
-    "discord.js": "^11.4.2",
-    "moment": "^2.24.0",
-    "node-cron": "^2.0.3",
-    "shortid": "^2.2.15"
+  "ava": {
+    "compileEnhancements": false,
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
   },
-  "devDependencies": {
-    "husky": "^3.0.5",
-    "lint-staged": "^9.2.5",
-    "prettier": "^1.18.2",
-    "ts-node": "^8.3.0",
-    "typescript": "^3.6.3"
+  "nyc": {
+    "include": [
+      "lib/**/*.ts"
+    ],
+    "exclude": [
+      "lib/**/*.spec.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text-summary",
+      "html"
+    ],
+    "sourceMap": true,
+    "instrument": true
   }
 }
