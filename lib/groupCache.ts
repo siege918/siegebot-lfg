@@ -1,21 +1,22 @@
-import { Group, GroupParams, Player } from './group';
-import { Snowflake, TextChannel, GuildMember } from 'discord.js';
+import { GuildMember, Snowflake, TextChannel } from 'discord.js';
 import * as moment from 'moment';
 import { generate as generateShortId } from 'shortid';
 
+import { Group, IGroupParams, IPlayer } from './group';
+
 export class GroupCache {
-  private _cache: Map<string, Group>;
+  private cache: Map<string, Group>;
 
   constructor() {
-    this._cache = new Map<string, Group>();
+    this.cache = new Map<string, Group>();
   }
 
-  has(id: string): boolean {
-    return this._cache.has(id);
+  public has(id: string): boolean {
+    return this.cache.has(id);
   }
 
-  get(id: string): Group {
-    let group = this._cache.get(id);
+  public get(id: string): Group {
+    const group = this.cache.get(id);
 
     if (!group) {
       throw new RangeError('The specified group does not exist.');
@@ -24,8 +25,8 @@ export class GroupCache {
     return group;
   }
 
-  print(id: string, doMention: boolean = false): string {
-    let group = this._cache.get(id);
+  public print(id: string, doMention: boolean = false): string {
+    const group = this.cache.get(id);
 
     if (!group) {
       return '';
@@ -37,14 +38,14 @@ export class GroupCache {
 `;
   }
 
-  printAll(): string {
-    return [...this._cache.keys()]
+  public printAll(): string {
+    return [...this.cache.keys()]
       .map((id: string) => this.print(id))
       .join('\n---------------------------------\n\n');
   }
 
-  get15MinuteGroups(): Group[] {
-    let groups = [...this._cache.values()].filter(
+  public get15MinuteGroups(): Group[] {
+    const groups = [...this.cache.values()].filter(
       (group: Group) =>
         !group.hasHad15MinuteUpdate &&
         moment()
@@ -59,8 +60,8 @@ export class GroupCache {
     return groups;
   }
 
-  getStartingGroups(): Group[] {
-    let groups = [...this._cache.values()].filter(
+  public getStartingGroups(): Group[] {
+    const groups = [...this.cache.values()].filter(
       (group: Group) =>
         !group.hasHadStartingUpdate && moment().isAfter(group.startTime)
     );
@@ -72,15 +73,15 @@ export class GroupCache {
     return groups;
   }
 
-  housekeep() {
-    for (let group of this._cache.values()) {
+  public housekeep() {
+    for (const group of this.cache.values()) {
       if (group.hasHadStartingUpdate) {
-        this._cache.delete(group.id);
+        this.cache.delete(group.id);
       }
     }
   }
 
-  create(
+  public create(
     creatorMember: GuildMember,
     gameName: string,
     maxPlayers: number,
@@ -93,16 +94,16 @@ export class GroupCache {
       id = generateShortId().substring(0, 4);
     } while (this.has(id));
 
-    let creator = {
+    const creator = {
       Id: creatorMember.id,
       Tag: creatorMember.user.tag,
       Mention: creatorMember.toString()
     };
 
-    let players = new Map();
+    const players = new Map();
     players.set(creatorMember.id, creator);
 
-    let groupData: GroupParams = {
+    const groupData: IGroupParams = {
       id,
       gameName,
       players,
@@ -112,63 +113,65 @@ export class GroupCache {
       channel
     };
 
-    this._cache.set(id, new Group(groupData));
+    this.cache.set(id, new Group(groupData));
 
     return id;
   }
 
-  remove(creator: Snowflake, id: string): Group {
-    let group = this.get(id);
+  public remove(creator: Snowflake, id: string): Group {
+    const group = this.get(id);
 
     if (group.creator.Id !== creator) {
       throw new Error('Groups can only be removed by their creator.');
     }
 
-    this._cache.delete(id);
+    this.cache.delete(id);
 
     return group;
   }
 
-  joinGroup(player: GuildMember, id: string): Group {
-    let group = this.get(id);
+  public joinGroup(player: GuildMember, id: string): Group {
+    const group = this.get(id);
 
     group.addPlayer(player);
     return group;
   }
 
-  leaveGroup(player: Snowflake, id: string): Group {
-    let group = this.get(id);
+  public leaveGroup(player: Snowflake, id: string): Group {
+    const group = this.get(id);
 
     group.removePlayer(player);
     return group;
   }
 
-  export(): string {
-    return JSON.stringify(this._cache);
+  public export(): string {
+    return JSON.stringify(this.cache);
   }
 
-  import(data: string): Map<string, Group> {
-    let importData = new Map<Snowflake, GroupParams>(JSON.parse(data));
-    let newCache = new Map<Snowflake, Group>();
+  public import(data: string): Map<string, Group> {
+    const importData = new Map<Snowflake, IGroupParams>(JSON.parse(data));
+    const newCache = new Map<Snowflake, Group>();
 
-    for (let key of importData.keys()) {
-      let importDatum = importData.get(key);
+    for (const key of importData.keys()) {
+      const importDatum = importData.get(key);
 
       if (importDatum) {
         if (
           importDatum.players &&
           typeof importDatum.players[Symbol.iterator] === 'function'
         ) {
-          importDatum.players = new Map<Snowflake, Player>(importDatum.players);
+          importDatum.players = new Map<Snowflake, IPlayer>(
+            importDatum.players
+          );
         } else {
-          importDatum.players = new Map<Snowflake, Player>();
+          importDatum.players = new Map<Snowflake, IPlayer>();
         }
 
         newCache.set(key, new Group(importDatum));
       }
     }
 
-    this._cache = newCache;
-    return this._cache;
+    this.cache = newCache;
+    return this.cache;
   }
 }

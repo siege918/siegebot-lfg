@@ -1,39 +1,40 @@
-import { Snowflake, TextChannel, GuildMember } from 'discord.js';
+import { GuildMember, Snowflake, TextChannel } from 'discord.js';
 import { Moment } from 'moment';
-import { DATE_FORMAT } from './constants';
 import moment = require('moment');
 
-export interface Player {
+import { DATE_FORMAT } from './constants';
+
+export interface IPlayer {
   Id: Snowflake;
   Tag: string;
   Mention: string;
 }
 
-export interface GroupParams {
+export interface IGroupParams {
   id: string;
   gameName: string;
-  players: Map<Snowflake, Player>;
+  players: Map<Snowflake, IPlayer>;
   maxPlayers: number;
   startTime: Date;
-  creator: Player;
+  creator: IPlayer;
   channel: Snowflake;
   hasHad15MinuteUpdate?: boolean;
   hasHadStartingUpdate?: boolean;
 }
 
-export class Group implements GroupParams {
+export class Group implements IGroupParams {
   public id: string;
   public gameName: string;
-  public players: Map<Snowflake, Player>;
+  public players: Map<Snowflake, IPlayer>;
   public maxPlayers: number;
   public startTime: Date;
   public startTimeMoment: Moment;
-  public creator: Player;
+  public creator: IPlayer;
   public channel: Snowflake;
   public hasHad15MinuteUpdate: boolean;
   public hasHadStartingUpdate: boolean;
 
-  constructor(data: GroupParams) {
+  constructor(data: IGroupParams) {
     this.id = data.id;
     this.gameName = data.gameName;
     this.players = data.players;
@@ -46,11 +47,11 @@ export class Group implements GroupParams {
     this.hasHadStartingUpdate = !!data.hasHadStartingUpdate;
   }
 
-  isFull(): boolean {
+  public isFull(): boolean {
     return this.maxPlayers > 0 && this.players.size >= this.maxPlayers;
   }
 
-  addPlayer(player: GuildMember) {
+  public addPlayer(player: GuildMember) {
     if (this.isFull()) {
       throw new Error("You can't join a full group.");
     }
@@ -66,7 +67,7 @@ export class Group implements GroupParams {
     });
   }
 
-  removePlayer(player: Snowflake) {
+  public removePlayer(player: Snowflake) {
     if (!this.players.has(player)) {
       throw new Error("You can't leave a group that you're not in.");
     }
@@ -74,7 +75,7 @@ export class Group implements GroupParams {
     this.players.delete(player);
   }
 
-  print(doMention: boolean = false): string {
+  public print(doMention: boolean = false): string {
     return `    **ID: ${this.id}**
     *Game*: ${this.gameName}
     *Created by*: ${this.creator.Tag}
