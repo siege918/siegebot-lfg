@@ -1,11 +1,18 @@
 {
   "compilerOptions": {
-    "target": "es2015",
+    "target": "esnext",
     "module": "commonjs",
-    "declaration": true,
-    "outDir": "./dist",
+    "declaration": false,
+    "outDir": "dist",
     "types": ["discord.js", "node"],
     "strict": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
     "strictPropertyInitialization": false
-  }
+  },
+  "filesGlob": ["./lib/**/*.ts"],
+  "exclude": ["node_modules", "dist", "./lib/**/*.spec.ts"]
 }

@@ -1,6 +1,7 @@
+import { S3, Credentials } from 'aws-sdk';
+
 import { GroupCache } from './groupCache';
 import * as Constants from './constants';
-import { S3, Credentials } from 'aws-sdk';
 
 const accessKeyID = process.env[Constants.S3_ACCESS_KEY_ENV] || '';
 const secretAccessKey = process.env[Constants.S3_SECRET_ENV] || '';

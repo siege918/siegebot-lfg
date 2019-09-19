@@ -1,9 +1,12 @@
+require('dotenv').config();
+
 import { Message, TextChannel, Client } from 'discord.js';
+import * as moment from 'moment';
+import * as cron from 'node-cron';
+
 import { Config } from './config';
 import { GroupCache } from './groupCache';
-import * as moment from 'moment';
 import { DATE_FORMAT } from './constants';
-import * as cron from 'node-cron';
 
 let discordClient: Client;
 let groupCache: GroupCache = new GroupCache();
