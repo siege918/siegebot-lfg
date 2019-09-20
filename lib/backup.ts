@@ -1,7 +1,7 @@
-import { S3, Credentials } from 'aws-sdk';
+import { Credentials, S3 } from 'aws-sdk';
 
-import { GroupCache } from './groupCache';
 import * as Constants from './constants';
+import { GroupCache } from './groupCache';
 
 const accessKeyID = process.env[Constants.S3_ACCESS_KEY_ENV] || '';
 const secretAccessKey = process.env[Constants.S3_SECRET_ENV] || '';
@@ -18,7 +18,9 @@ if (accessKeyID && secretAccessKey && bucketName) {
 }
 
 export function restore(groupCache: GroupCache) {
-  if (!S3Client) return;
+  if (!S3Client) {
+    return;
+  }
 
   S3Client.getObject(
     {
@@ -29,8 +31,8 @@ export function restore(groupCache: GroupCache) {
       if (err) {
         console.warn(err);
       } else {
-        let body = data.Body || '';
-        var latestBackupName = body.toString().trim();
+        const body = data.Body || '';
+        const latestBackupName = body.toString().trim();
 
         if (latestBackupName) {
           restoreBackupByName(groupCache, latestBackupName);
@@ -50,8 +52,8 @@ function restoreBackupByName(groupCache: GroupCache, latestBackupName: string) {
       if (err) {
         console.warn(err);
       } else {
-        let body = data.Body || '';
-        var latestBackup = body.toString().trim();
+        const body = data.Body || '';
+        const latestBackup = body.toString().trim();
 
         if (latestBackup) {
           groupCache.import(latestBackup);
@@ -62,10 +64,12 @@ function restoreBackupByName(groupCache: GroupCache, latestBackupName: string) {
 }
 
 export function backup(groupCache: GroupCache) {
-  if (!S3Client) return;
-  let backupDate = new Date();
+  if (!S3Client) {
+    return;
+  }
+  const backupDate = new Date();
 
-  let backupName = `LFG_${backupDate.toISOString()}.json`;
+  const backupName = `LFG_${backupDate.toISOString()}.json`;
   console.log(groupCache);
   console.log(groupCache.export());
 
