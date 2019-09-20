@@ -1,15 +1,16 @@
+// tslint:disable-next-line:no-var-requires
 require('dotenv').config();
 
-import { Message, TextChannel, Client } from 'discord.js';
+import { Client, Message, TextChannel } from 'discord.js';
 import * as moment from 'moment';
 import * as cron from 'node-cron';
 
 import { Config } from './config';
-import { GroupCache } from './groupCache';
 import { DATE_FORMAT } from './constants';
+import { GroupCache } from './groupCache';
 
 let discordClient: Client;
-let groupCache: GroupCache = new GroupCache();
+const groupCache: GroupCache = new GroupCache();
 
 moment.relativeTimeThreshold('M', 12);
 moment.relativeTimeThreshold('d', 30);
@@ -18,35 +19,29 @@ moment.relativeTimeThreshold('m', 120);
 moment.relativeTimeThreshold('s', 360);
 moment.relativeTimeThreshold('ss', 3);
 
-//Alert people when a game is 15 minutes away, or starting now
+// Alert people when a game is 15 minutes away, or starting now
 cron.schedule('* * * * *', () => {
   groupCache.housekeep();
 
-  let fifteenMinuteGroups = groupCache.get15MinuteGroups();
+  const fifteenMinuteGroups = groupCache.get15MinuteGroups();
 
-  for (let i = 0; i < fifteenMinuteGroups.length; i++) {
-    let channel = discordClient.channels.get(fifteenMinuteGroups[i].channel);
+  fifteenMinuteGroups.forEach(g => {
+    const channel = discordClient.channels.get(g.channel);
     if (channel) {
-      let textChannel = channel as TextChannel;
-      textChannel.send(
-        `A game is starting in 15 minutes!\n\n${fifteenMinuteGroups[i].print(
-          true
-        )}`
-      );
+      const textChannel = channel as TextChannel;
+      textChannel.send(`A game is starting in 15 minutes!\n\n${g.print(true)}`);
     }
-  }
+  });
 
-  let startingGroups = groupCache.getStartingGroups();
+  const startingGroups = groupCache.getStartingGroups();
 
-  for (var i = 0; i < startingGroups.length; i++) {
-    let channel = discordClient.channels.get(startingGroups[i].channel);
+  startingGroups.forEach(g => {
+    const channel = discordClient.channels.get(g.channel);
     if (channel) {
-      let textChannel = channel as TextChannel;
-      textChannel.send(
-        `A game is starting now!\n\n${startingGroups[i].print(true)}`
-      );
+      const textChannel = channel as TextChannel;
+      textChannel.send(`A game is starting now!\n\n${g.print(true)}`);
     }
-  }
+  });
 });
 
 /**
@@ -64,7 +59,7 @@ const createPromise = (
   config: Config,
   resolve: (cache: GroupCache) => any
 ) => {
-  //Remove command by removing all before first space
+  // Remove command by removing all before first space
   const q = message.content.substring(message.content.indexOf(' ')).trim();
   const params = q.split('|').map(arg => arg.trim());
 
@@ -77,7 +72,7 @@ const createPromise = (
 
     const gameName = params[0];
     const startTime: moment.Moment = moment(params[1], DATE_FORMAT, true);
-    let maxPlayers = params[2] ? parseInt(params[2]) : 0;
+    let maxPlayers = params[2] ? parseInt(params[2], 10) : 0;
 
     if (!startTime.isValid()) {
       console.log(`"${params[1]}"`);
@@ -90,7 +85,7 @@ const createPromise = (
       maxPlayers = 0;
     }
 
-    let groupId = groupCache.create(
+    const groupId = groupCache.create(
       message.member,
       gameName,
       maxPlayers,
@@ -112,13 +107,13 @@ const removePromise = (
   resolve: (cache: GroupCache) => any
 ) => {
   try {
-    //Remove command by removing all before first space
+    // Remove command by removing all before first space
     const q = message.content.substring(message.content.indexOf(' ')).trim();
     const params = q.split(' ').map(arg => arg.trim());
 
-    let groupId = params[0];
+    const groupId = params[0];
 
-    var group = groupCache.remove(message.author.id, groupId);
+    const group = groupCache.remove(message.author.id, groupId);
 
     if (!group) {
       throw new Error('Group deletion unsuccessful.');
@@ -140,11 +135,11 @@ const joinPromise = (
   resolve: (cache: GroupCache) => any
 ) => {
   try {
-    //Remove command by removing all before first space
+    // Remove command by removing all before first space
     const q = message.content.substring(message.content.indexOf(' ')).trim();
     const params = q.split(' ').map(arg => arg.trim());
 
-    let groupId = params[0];
+    const groupId = params[0];
 
     groupCache.joinGroup(message.member, groupId);
     message.channel.send(
@@ -165,13 +160,13 @@ const leavePromise = (
   resolve: (cache: GroupCache) => any
 ) => {
   try {
-    //Remove command by removing all before first space
+    // Remove command by removing all before first space
     const q = message.content.substring(message.content.indexOf(' ')).trim();
     const params = q.split(' ').map(arg => arg.trim());
 
-    let groupId = params[0];
+    const groupId = params[0];
 
-    var group = groupCache.leaveGroup(message.author.id, groupId);
+    const group = groupCache.leaveGroup(message.author.id, groupId);
     message.channel.send(
       `**Successfully left the following group:**\n\n${groupCache.print(
         groupId
@@ -189,7 +184,7 @@ const listPromise = (
   config: Config,
   resolve: (cache: string) => any
 ) => {
-  let output = groupCache.printAll();
+  const output = groupCache.printAll();
   if (output) {
     message.channel.send(
       `Here are the upcoming games:

@@ -7,7 +7,8 @@
     "indent": [true, "spaces", 2],
     "object-literal-sort-keys": [false],
     "one-line": [true, "check-open-space", "check-whitespace"],
-    "trailing-comma": [false]
+    "trailing-comma": [false],
+    "no-console": false
   },
   "rulesDirectory": ["tslint-plugin-prettier"]
 }
