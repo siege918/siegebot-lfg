@@ -15,6 +15,8 @@ if (accessKeyID && secretAccessKey && bucketName) {
     region,
     credentials: new Credentials(accessKeyID, secretAccessKey)
   });
+} else if (process.env.NODE_ENV === 'development') {
+  s3 = new S3({ region });
 }
 
 export function restore(groupCache: GroupCache) {
