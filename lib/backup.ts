@@ -8,63 +8,63 @@ const secretAccessKey = process.env[Constants.S3_SECRET_ENV] || '';
 const bucketName = process.env[Constants.S3_BUCKET_ENV] || '';
 const region = process.env[Constants.S3_REGION_ENV] || 'us-west-2';
 
-let S3Client: S3;
+let s3: S3;
 
 if (accessKeyID && secretAccessKey && bucketName) {
-  S3Client = new S3({
+  s3 = new S3({
     region,
     credentials: new Credentials(accessKeyID, secretAccessKey)
   });
+} else if (process.env.NODE_ENV === 'development') {
+  s3 = new S3({ region });
 }
 
-export function restore(groupCache: GroupCache) {
-  if (!S3Client) {
+export async function restore(groupCache: GroupCache) {
+  if (!s3) {
     return;
   }
 
-  S3Client.getObject(
-    {
-      Bucket: bucketName,
-      Key: 'latest-lfg-backup'
-    },
-    (err, data) => {
-      if (err) {
-        console.warn(err);
-      } else {
-        const body = data.Body || '';
-        const latestBackupName = body.toString().trim();
+  try {
+    const data = await s3
+      .getObject({ Bucket: bucketName, Key: 'latest-lfg-backup' })
+      .promise();
 
-        if (latestBackupName) {
-          restoreBackupByName(groupCache, latestBackupName);
-        }
-      }
+    const body = data.Body || '';
+    const latestBackupName = body.toString().trim();
+
+    if (latestBackupName) {
+      await restoreBackupByName(groupCache, latestBackupName);
     }
-  );
+  } catch (err) {
+    console.warn(err);
+  }
 }
 
-function restoreBackupByName(groupCache: GroupCache, latestBackupName: string) {
-  S3Client.getObject(
-    {
-      Bucket: bucketName,
-      Key: latestBackupName
-    },
-    (err, data) => {
-      if (err) {
-        console.warn(err);
-      } else {
-        const body = data.Body || '';
-        const latestBackup = body.toString().trim();
+async function restoreBackupByName(
+  groupCache: GroupCache,
+  latestBackupName: string
+) {
+  try {
+    const data = await s3
+      .getObject({
+        Bucket: bucketName,
+        Key: latestBackupName
+      })
+      .promise();
 
-        if (latestBackup) {
-          groupCache.import(latestBackup);
-        }
-      }
+    const body = data.Body || '';
+    const latestBackup = body.toString().trim();
+
+    if (latestBackup) {
+      groupCache.import(latestBackup);
     }
-  );
+  } catch (err) {
+    console.warn(err);
+  }
 }
 
-export function backup(groupCache: GroupCache) {
-  if (!S3Client) {
+export async function backup(groupCache: GroupCache) {
+  if (!s3) {
     return;
   }
   const backupDate = new Date();
@@ -73,40 +73,38 @@ export function backup(groupCache: GroupCache) {
   console.log(groupCache);
   console.log(groupCache.export());
 
-  S3Client.upload(
-    {
-      Bucket: bucketName,
-      Key: backupName,
-      Body: groupCache.export()
-    },
-    (err, data) => {
-      if (err) {
-        console.warn('Error marking backup file as latest.');
-        console.warn(err);
-      } else {
-        console.log(`File ${backupName} has been uploaded to ${bucketName}`);
-        markFileAsLatest(backupName);
-      }
-    }
-  );
+  try {
+    await s3
+      .upload({
+        Bucket: bucketName,
+        Key: backupName,
+        Body: groupCache.export()
+      })
+      .promise();
+
+    console.log(`File ${backupName} has been uploaded to ${bucketName}`);
+    await markFileAsLatest(backupName);
+  } catch (err) {
+    console.warn('Error marking backup file as latest.');
+    console.warn(err);
+  }
 }
 
-function markFileAsLatest(fileName: string) {
-  S3Client.upload(
-    {
-      Bucket: bucketName,
-      Key: 'latest-lfg-backup',
-      Body: fileName
-    },
-    (err, data) => {
-      if (err) {
-        console.warn('Error marking backup file as latest.');
-        console.warn(err);
-      } else {
-        console.log(
-          `File ${fileName} has been marked as latest in bucket ${bucketName}`
-        );
-      }
-    }
-  );
+async function markFileAsLatest(fileName: string) {
+  try {
+    await s3
+      .upload({
+        Bucket: bucketName,
+        Key: 'latest-lfg-backup',
+        Body: fileName
+      })
+      .promise();
+
+    console.log(
+      `File ${fileName} has been marked as latest in bucket ${bucketName}`
+    );
+  } catch (err) {
+    console.warn('Error marking backup file as latest.');
+    console.warn(err);
+  }
 }
