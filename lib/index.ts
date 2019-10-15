@@ -7,7 +7,7 @@ import * as cron from 'node-cron';
 
 import { Config } from './config';
 import { DATE_FORMAT } from './constants';
-import { GroupCache } from './groupCache';
+import GroupCache from './GroupCache';
 
 let discordClient: Client;
 const groupCache: GroupCache = new GroupCache();
