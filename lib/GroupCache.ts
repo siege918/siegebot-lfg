@@ -2,7 +2,7 @@ import { GuildMember, Snowflake, TextChannel } from 'discord.js';
 import * as moment from 'moment';
 import { generate as generateShortId } from 'shortid';
 
-import { Group, IGroupParams, IPlayer } from './group';
+import { Group, IGroupParams, IPlayer } from './Group';
 
 export default class GroupCache {
   private cache: Map<string, Group>;
@@ -145,11 +145,13 @@ export default class GroupCache {
   }
 
   public export(): string {
-    return JSON.stringify(this.cache);
+    return JSON.stringify(this.cache, this.exportReplacer);
   }
 
   public import(data: string): Map<string, Group> {
-    const importData = new Map<Snowflake, IGroupParams>(JSON.parse(data));
+    const importData = new Map<Snowflake, IGroupParams>(
+      JSON.parse(data, this.importReviver)
+    );
     const newCache = new Map<Snowflake, Group>();
 
     for (const key of importData.keys()) {
@@ -173,5 +175,30 @@ export default class GroupCache {
 
     this.cache = newCache;
     return this.cache;
+  }
+
+  private exportReplacer(key: string, value: any): any {
+    switch (true) {
+      case value instanceof Map:
+        return {
+          jsontype: 'JSMap',
+          jsondata: [...(value as Map<any, any>).entries()]
+        };
+      default:
+        return value;
+    }
+  }
+
+  private importReviver(key: string, value: any): any {
+    if (!value.jsontype) {
+      return value;
+    }
+
+    switch (value.jsontype) {
+      case 'JSMap':
+        return new Map<any, any>(value.jsondata);
+      default:
+        return value;
+    }
   }
 }
