@@ -4,7 +4,7 @@ import { generate as generateShortId } from 'shortid';
 
 import { Group, IGroupParams, IPlayer } from './group';
 
-export class GroupCache {
+export default class GroupCache {
   private cache: Map<string, Group>;
 
   constructor() {
