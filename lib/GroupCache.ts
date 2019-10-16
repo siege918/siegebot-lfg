@@ -2,7 +2,7 @@ import { GuildMember, Snowflake, TextChannel } from 'discord.js';
 import * as moment from 'moment';
 import { generate as generateShortId } from 'shortid';
 
-import { Group, IGroupParams, IPlayer } from './Group';
+import Group, { IGroupParams, IPlayer } from './Group';
 
 export default class GroupCache {
   private cache: Map<string, Group>;

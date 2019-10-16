@@ -22,7 +22,7 @@ export interface IGroupParams {
   hasHadStartingUpdate?: boolean;
 }
 
-export class Group implements IGroupParams {
+export default class Group implements IGroupParams {
   public id: string;
   public gameName: string;
   public players: Map<Snowflake, IPlayer>;
