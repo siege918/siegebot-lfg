@@ -149,39 +149,33 @@ export default class GroupCache {
   }
 
   public import(data: string): Map<string, Group> {
-    const importData = new Map<Snowflake, IGroupParams>(
+    const importData = new Map<string, Group>(
       JSON.parse(data, this.importReviver)
     );
-    const newCache = new Map<Snowflake, Group>();
 
-    for (const key of importData.keys()) {
-      const importDatum = importData.get(key);
-
-      if (importDatum) {
-        if (
-          importDatum.players &&
-          typeof importDatum.players[Symbol.iterator] === 'function'
-        ) {
-          importDatum.players = new Map<Snowflake, IPlayer>(
-            importDatum.players
-          );
-        } else {
-          importDatum.players = new Map<Snowflake, IPlayer>();
-        }
-
-        newCache.set(key, new Group(importDatum));
-      }
-    }
-
-    this.cache = newCache;
+    this.cache = importData;
     return this.cache;
   }
 
   private exportReplacer(key: string, value: any): any {
+    const getType = (input: Group | IPlayer) => {
+      if (!input) {
+        return 'undefined';
+      } else if (input instanceof Group) {
+        return 'Group';
+      } else {
+        return typeof input;
+      }
+    };
+
     switch (true) {
       case value instanceof Map:
         return {
           jsontype: 'JSMap',
+          metadata: {
+            key: 'string',
+            value: getType(value.values().next().value)
+          },
           jsondata: [...(value as Map<any, any>).entries()]
         };
       default:
@@ -196,7 +190,16 @@ export default class GroupCache {
 
     switch (value.jsontype) {
       case 'JSMap':
-        return new Map<any, any>(value.jsondata);
+        if (value.metadata.value === 'Group') {
+          return new Map<string, Group>(
+            value.jsondata.map(([mapKey, mapValue]: [string, IGroupParams]) => [
+              mapKey,
+              new Group(mapValue)
+            ])
+          );
+        } else {
+          return new Map<string, any>(value.jsondata);
+        }
       default:
         return value;
     }
