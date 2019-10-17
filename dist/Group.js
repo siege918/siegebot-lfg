@@ -50,4 +50,4 @@ class Group {
     *Max Players*: ${this.maxPlayers || 'No Limit'}`;
   }
 }
-exports.Group = Group;
+exports.default = Group;
