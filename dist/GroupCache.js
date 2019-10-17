@@ -2,7 +2,7 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 const moment = require('moment');
 const shortid_1 = require('shortid');
-const group_1 = require('./group');
+const Group_1 = require('./Group');
 class GroupCache {
   constructor() {
     this.cache = new Map();
@@ -82,7 +82,7 @@ class GroupCache {
       creator,
       channel
     };
-    this.cache.set(id, new group_1.Group(groupData));
+    this.cache.set(id, new Group_1.default(groupData));
     return id;
   }
   remove(creator, id) {
@@ -104,27 +104,56 @@ class GroupCache {
     return group;
   }
   export() {
-    return JSON.stringify(this.cache);
+    return JSON.stringify(this.cache, this.exportReplacer);
   }
   import(data) {
-    const importData = new Map(JSON.parse(data));
-    const newCache = new Map();
-    for (const key of importData.keys()) {
-      const importDatum = importData.get(key);
-      if (importDatum) {
-        if (
-          importDatum.players &&
-          typeof importDatum.players[Symbol.iterator] === 'function'
-        ) {
-          importDatum.players = new Map(importDatum.players);
-        } else {
-          importDatum.players = new Map();
-        }
-        newCache.set(key, new group_1.Group(importDatum));
-      }
-    }
-    this.cache = newCache;
+    const importData = new Map(JSON.parse(data, this.importReviver));
+    this.cache = importData;
     return this.cache;
   }
+  exportReplacer(key, value) {
+    const getType = input => {
+      if (!input) {
+        return 'undefined';
+      } else if (input instanceof Group_1.default) {
+        return 'Group';
+      } else {
+        return typeof input;
+      }
+    };
+    switch (true) {
+      case value instanceof Map:
+        return {
+          jsontype: 'JSMap',
+          metadata: {
+            key: 'string',
+            value: getType(value.values().next().value)
+          },
+          jsondata: [...value.entries()]
+        };
+      default:
+        return value;
+    }
+  }
+  importReviver(key, value) {
+    if (!value.jsontype) {
+      return value;
+    }
+    switch (value.jsontype) {
+      case 'JSMap':
+        if (value.metadata.value === 'Group') {
+          return new Map(
+            value.jsondata.map(([mapKey, mapValue]) => [
+              mapKey,
+              new Group_1.default(mapValue)
+            ])
+          );
+        } else {
+          return new Map(value.jsondata);
+        }
+      default:
+        return value;
+    }
+  }
 }
-exports.GroupCache = GroupCache;
+exports.default = GroupCache;
