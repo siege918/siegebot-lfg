@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/siege918/siegebot-lfg.svg?branch=master)](https://travis-ci.com/siege918/siegebot-lfg)
+
 # siegebot-lfg
 
 A bot plugin to organize gaming groups and handle scheduling and notification.
