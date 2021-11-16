@@ -28,7 +28,7 @@
     "@types/node": "~12.7.5",
     "@types/node-cron": "~2.0.2",
     "@types/shortid": "0.0.29",
-    "aws-sdk": "~2.529.0",
+    "aws-sdk": "~2.814.0",
     "discord.js": "~11.5.1",
     "dotenv": "~8.1.0",
     "moment": "~2.24.0",
